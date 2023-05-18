@@ -7,23 +7,26 @@ const btnRight = document.querySelector('#right');
 
 let canvasSize;
 let elementSize;
-let playerPosition;
-let playerPosX;
-let playerPosY;
+let playerPosition= {
+  x: undefined,
+  y: undefined,
+};
+//variable map, contiene cada nivel
 let map = maps[0].trim().split('\n');
 map = map.map((row) => row.trim().split(''));
-
+//listeners para renderizar el canvas
 window.addEventListener('load', setCanvasSize);
 window.addEventListener('resize', setCanvasSize);
-document.addEventListener('keydown', movePlayer)
 
+//listeners para mover al jugador
+document.addEventListener('keydown', movePlayer)
 btnUp.addEventListener('click', movePlayer);
 btnLeft.addEventListener('click', movePlayer);
 btnDown.addEventListener('click', movePlayer);
 btnRight.addEventListener('click', movePlayer);
 
 
-
+//función para definir las medidas del canvas
 function setCanvasSize() {
 
   if (window.innerHeight > window.innerWidth) {
@@ -39,6 +42,7 @@ function setCanvasSize() {
   startGame();
 }
 
+//función para mover al jugador
 function movePlayer(e) {
   let direction;
   if (e.key) {
@@ -53,41 +57,41 @@ function movePlayer(e) {
     case 'Arriba':
     case 'w':
     case 'ArrowUp':
-      if ( playerPosY === elementSize ) {
+      if ( playerPosition.y === elementSize ) {
 
       } else {
-        playerPosY = playerPosY - elementSize;
-        game.fillText(emojis['PLAYER'], playerPosX, playerPosY);
+        playerPosition.y -= elementSize;
+        game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
       }      
       break;
     case 'Abajo':
     case 's':
     case 'ArrowDown':
-      if ( playerPosY === (elementSize * 10) ) {
+      if ( playerPosition.y === (elementSize * 10) ) {
 
       } else {
-        playerPosY = playerPosY + elementSize;
-        game.fillText(emojis['PLAYER'], playerPosX, playerPosY);
+        playerPosition.y += elementSize;
+        game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
       } 
       break;
     case 'Izquierda':
     case 'a':
     case 'ArrowLeft':
-      if ( playerPosX === elementSize ) {
+      if ( playerPosition.x === elementSize ) {
 
       } else {
-        playerPosX = playerPosX - elementSize;
-        game.fillText(emojis['PLAYER'], playerPosX, playerPosY);
+        playerPosition.x -= elementSize;
+        game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
       } 
       break;
     case 'Derecha':
     case 'd':
     case 'ArrowRight':
-      if ( playerPosX === (elementSize * 10) ) {
+      if ( playerPosition.x === (elementSize * 10) ) {
 
       } else {
-        playerPosX = playerPosX + elementSize;
-        game.fillText(emojis['PLAYER'], playerPosX, playerPosY);
+        playerPosition.x += elementSize;
+        game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
       } 
       break;
   
@@ -96,6 +100,7 @@ function movePlayer(e) {
   }
 }
 
+//función para inicializar el mapa
 function startGame() {
   game.font = elementSize + 'px Serif';
   game.textAlign = 'end';
@@ -108,9 +113,9 @@ function startGame() {
       game.fillText(emoji, posX, posY);
       //renderizado del jugador
       if (col === 'O') {
-        playerPosX = posX;
-        playerPosY = posY;
-        game.fillText(emojis['PLAYER'], playerPosX, playerPosY);
+        playerPosition.x = posX;
+        playerPosition.y = posY;
+        game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
       }     
     });
   });
