@@ -7,13 +7,19 @@ const btnRight = document.querySelector('#right');
 
 let canvasSize;
 let elementSize;
-let playerPosition= {
+let oldElementSize;
+let level = 0;
+let lives = 3;
+const playerPosition = {
   x: undefined,
   y: undefined,
 };
-//variable map, contiene cada nivel
-let map = maps[0].trim().split('\n');
-map = map.map((row) => row.trim().split(''));
+const goalPosition = {
+  x: undefined,
+  y: undefined,
+};
+let bombPositions = [];
+let map;
 //listeners para renderizar el canvas
 window.addEventListener('load', setCanvasSize);
 window.addEventListener('resize', setCanvasSize);
@@ -37,6 +43,11 @@ function setCanvasSize() {
 
   canvas.setAttribute('width', canvasSize);
   canvas.setAttribute('height', canvasSize);
+  if (elementSize) {
+    oldElementSize = elementSize;
+  } else {
+    oldElementSize = (canvasSize / 10) - 1;
+  }
   elementSize = (canvasSize / 10) - 1;
 
   startGame();
@@ -57,54 +68,67 @@ function movePlayer(e) {
     case 'Arriba':
     case 'w':
     case 'ArrowUp':
-      if ( playerPosition.y === elementSize ) {
-
-      } else {
+      if ( playerPosition.y.toFixed(3) > elementSize ) {
         playerPosition.y -= elementSize;
-        game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
       }      
       break;
     case 'Abajo':
     case 's':
     case 'ArrowDown':
-      if ( playerPosition.y === (elementSize * 10) ) {
-
-      } else {
+      if ( playerPosition.y.toFixed(3) < (elementSize * 10) ) {
         playerPosition.y += elementSize;
-        game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
       } 
       break;
     case 'Izquierda':
     case 'a':
     case 'ArrowLeft':
-      if ( playerPosition.x === elementSize ) {
-
-      } else {
+      if ( playerPosition.x.toFixed(3) > elementSize ) {
         playerPosition.x -= elementSize;
-        game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
       } 
       break;
     case 'Derecha':
     case 'd':
     case 'ArrowRight':
-      if ( playerPosition.x === (elementSize * 10) ) {
-
-      } else {
+      if ( playerPosition.x.toFixed(3) < (elementSize * 10) ) {
         playerPosition.x += elementSize;
-        game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
       } 
       break;
   
     default:
       break;
   }
+  //Verificación de completar nivel
+  if ( (playerPosition.x.toFixed(3) == goalPosition.x.toFixed(3)) && (playerPosition.y.toFixed(3) == goalPosition.y.toFixed(3))) {
+    level++;
+  }
+  //Verificación de chocar contra una bomba
+  const bombCollition = bombPositions.find(bomb => {
+    return (playerPosition.x.toFixed(3) == bomb.x.toFixed(3)) && (playerPosition.y.toFixed(3) == bomb.y.toFixed(3));
+  });
+
+  if (bombCollition) {
+    lives--;
+    if (lives <= 0) {
+      level = 0;
+    }
+    playerPosition.x = undefined;
+    playerPosition.y = undefined;
+  }
+  startGame();
 }
 
+function levelUp() {
+
+}
 //función para inicializar el mapa
 function startGame() {
   game.font = elementSize + 'px Serif';
   game.textAlign = 'end';
   //renderizado del mapa
+  map = maps[level].trim().split('\n');
+  map = map.map((row) => row.trim().split(''));
+  game.clearRect(0,0,canvasSize,canvasSize);
+  bombPositions = [];
   map.forEach((row, rowI) => {
     row.forEach((col, colI) => {
       const emoji = emojis[col];
@@ -112,11 +136,24 @@ function startGame() {
       const posY = elementSize * (rowI + 1);
       game.fillText(emoji, posX, posY);
       //renderizado del jugador
-      if (col === 'O') {
-        playerPosition.x = posX;
-        playerPosition.y = posY;
-        game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
-      }     
+      if (!playerPosition.x && !playerPosition.y){
+        if (col == 'O') {
+          playerPosition.x = posX;
+          playerPosition.y = posY;
+        }      
+      } else {
+        playerPosition.x = elementSize * (Math.round(playerPosition.x/oldElementSize));
+        playerPosition.y = elementSize * (Math.round(playerPosition.y/oldElementSize));
+      } 
+      if (col == 'I') {
+        goalPosition.x = posX;
+        goalPosition.y = posY;
+      } else if (col == 'X') {
+        const bombPosition = {x: posX, y: posY}
+        bombPositions.push(bombPosition);
+      }
+           
     });
   });
+  game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
 }
