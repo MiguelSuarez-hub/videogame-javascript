@@ -4,12 +4,16 @@ const btnUp = document.querySelector('#up');
 const btnDown = document.querySelector('#down');
 const btnLeft = document.querySelector('#left');
 const btnRight = document.querySelector('#right');
+const spanLives = document.querySelector('#lives');
+const spanTime = document.querySelector('#time');
 
 let canvasSize;
 let elementSize;
 let oldElementSize;
 let level = 0;
 let lives = 3;
+let timeStart;
+let timeInterval;
 const playerPosition = {
   x: undefined,
   y: undefined,
@@ -19,7 +23,6 @@ const goalPosition = {
   y: undefined,
 };
 let bombPositions = [];
-let map;
 //listeners para renderizar el canvas
 window.addEventListener('load', setCanvasSize);
 window.addEventListener('resize', setCanvasSize);
@@ -63,7 +66,6 @@ function movePlayer(e) {
     direction = btn.textContent;
   }
   
-
   switch (direction) {
     case 'Arriba':
     case 'w':
@@ -110,6 +112,7 @@ function movePlayer(e) {
     lives--;
     if (lives <= 0) {
       level = 0;
+      lives = 3;
     }
     playerPosition.x = undefined;
     playerPosition.y = undefined;
@@ -117,19 +120,37 @@ function movePlayer(e) {
   startGame();
 }
 
-function levelUp() {
-
+function gameWin() {
+  clearInterval(timeInterval);
 }
+
+function showLives() {
+  const hearts = Array(lives).fill(emojis.HEART);
+  spanLives.innerHTML = '';
+  hearts.forEach(heart => spanLives.append(heart));
+}
+
+function showTime() {
+  spanTime.innerHTML = Date.now() - timeStart;
+}
+
+
 //función para inicializar el mapa
 function startGame() {
   game.font = elementSize + 'px Serif';
   game.textAlign = 'end';
   //renderizado del mapa
-  map = maps[level].trim().split('\n');
-  map = map.map((row) => row.trim().split(''));
+
+  const map = maps[level];
+  if (!map) {
+    gameWin();
+    return;
+  }
+  const mapRow = map.trim().split('\n');
+  const mapRowCol = mapRow.map((row) => row.trim().split(''));
   game.clearRect(0,0,canvasSize,canvasSize);
   bombPositions = [];
-  map.forEach((row, rowI) => {
+  mapRowCol.forEach((row, rowI) => {
     row.forEach((col, colI) => {
       const emoji = emojis[col];
       const posX = elementSize * (colI + 1);
@@ -152,8 +173,14 @@ function startGame() {
         const bombPosition = {x: posX, y: posY}
         bombPositions.push(bombPosition);
       }
+      if (!timeStart) {
+        timeStart = Date.now();
+        timeInterval = setInterval(showTime,100);
+      }
+      
            
     });
   });
   game.fillText(emojis['PLAYER'], playerPosition.x, playerPosition.y);
+  showLives();  
 }
